@@ -1,0 +1,43 @@
+ci:
+  autofix_prs: true
+repos:
+  - repo: https://github.com/python-poetry/poetry
+    rev: 2.3.1
+    hooks:
+      - id: poetry-check
+        name: 📜 Check pyproject with Poetry
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        name: 👄 Check code spelling
+        args: [--write-changes, --skip="./*, translations/*", -L hass]
+        exclude: (pyproject.toml|poetry.lock|)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-json
+        name: "✅ Check JSON files"
+      - id: check-toml
+        name: "✅ Check TOML files"
+      - id: check-yaml
+        name: "✅ Check YAML files"
+      - id: check-added-large-files
+        name: "📁 Check for large files"
+      - id: debug-statements
+        name: "🐛 Check for forgotten debug statemens"
+      - id: check-merge-conflict
+        name: "💥 Check for merge conflicts"
+      - id: check-symlinks
+        name: "🔗 Check for broken symlinks"
+      - id: end-of-file-fixer
+        name: "🔚 Fix End of Files"
+      - id: trailing-whitespace
+        name: "⬜ Fix trailing whitespaces"
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.13
+    hooks:
+      - id: ruff
+        name: "🐶 Ruff Linter"
+      - id: ruff-format
+        name: "🐶 Ruff Formatter"

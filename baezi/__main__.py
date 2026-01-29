@@ -1,6 +1,7 @@
 """CLI für baezi."""
 
 import sys
+import traceback
 from pathlib import Path
 
 import rich_click as click
@@ -25,32 +26,31 @@ click.rich_click.GROUP_ARGUMENTS_OPTIONS = True
     type=click.Path(exists=True, file_okay=False, path_type=Path),
     help="Banking4 JSON Export Ordner",
 )
-@click.option("--api-url", "-u", help="ezbookkeeping API URL")
-@click.option("--api-token", "-t", help="API Token (alternativ: BAEZI_API_TOKEN env var)")
-@click.option("--min-date", "-d", help="Mindest-Buchungsdatum (YYYY-MM-DD)")
-@click.option("--dry-run", is_flag=True, help="[yellow]Testlauf ohne tatsächlichen Import[/yellow]")
-@click.option("--verbose", "-v", is_flag=True, help="Debug-Ausgaben aktivieren")
+@click.option("--api-url", "-u", help="ezBookkeeping API URL")
+@click.option("--api-token", "-t", help="API token (alternative: BAEZI_API_TOKEN env var)")
+@click.option("--min-date", "-d", help="Earliest date for transactions to be imported (YYYY-MM-DD)")
+@click.option("--dry-run", is_flag=True, help="[green]start a dry run without real import[/green]")
+@click.option("--verbose", "-v", is_flag=True, help="Enable debug output")
 @click.option(
     "--log-level",
     "-l",
     type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR"], case_sensitive=False),
     help="Log-Level",
 )
-def main(
+def main(  # noqa: C901, PLR0913
     json_folder: Path | None,
     api_url: str | None,
     api_token: str | None,
     min_date: str | None,
-    dry_run: bool,
-    verbose: bool,
+    dry_run: bool,  # noqa: FBT001
+    verbose: bool,  # noqa: FBT001
     log_level: str | None,
 ) -> None:
-    """[bold green]baezi[/bold green] - Banking4 zu ezbookkeeping Importer
+    """[bold green]baezi[/bold green] - Banking4 zu ezbookkeeping Importer.
 
     Importiert Transaktionen aus Banking4 JSON-Exports in ezbookkeeping.
 
     [bold]Konfiguration:[/bold]
-
     Die Konfiguration kann über Umgebungsvariablen (.env Datei) oder
     CLI-Optionen erfolgen. CLI-Optionen überschreiben Umgebungsvariablen.
 
@@ -141,8 +141,6 @@ def main(
     except Exception as e:
         click.echo(f"\n❌ Unerwarteter Fehler: {e}", err=True)
         if verbose:
-            import traceback
-
             traceback.print_exc()
         sys.exit(1)
 

@@ -27,7 +27,7 @@ dev = [
 
 [tool.poetry]
 version = "0.1.0"
-package-mode = false
+package-mode = true
 requires-poetry = ">=2.0,<3.0"
 
 [tool.poetry.dependencies]

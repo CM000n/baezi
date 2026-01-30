@@ -206,7 +206,11 @@ class TransactionImportService:
             return False
 
         except APIError as e:
-            logger.error(f"    ❌ API-Fehler bei B4ID {tx.id}: {e}")
+            # Zeige API-Response für bessere Diagnose
+            error_detail = str(e)
+            if e.response:
+                error_detail = f"{e} | Response: {e.response}"
+            logger.error(f"    ❌ API-Fehler bei B4ID {tx.id}: {error_detail}")
             self.stats.increment_errors()
             return False
 
@@ -271,7 +275,11 @@ class TransactionImportService:
             return False
 
         except APIError as e:
-            logger.error(f"    ❌ Transfer-Import fehlgeschlagen: {e}")
+            # Zeige API-Response für bessere Diagnose
+            error_detail = str(e)
+            if e.response:
+                error_detail = f"{e} | Response: {e.response}"
+            logger.error(f"    ❌ Transfer-Import fehlgeschlagen: {error_detail}")
             self.stats.increment_errors()
             return False
 
@@ -286,7 +294,9 @@ class TransactionImportService:
             True wenn erfolgreich
         """
         acc_id = self.account_service.get_ezb_account_id(tx.account_id)
-        trans_type = tx.transaction_type
+        
+        # Unmatched transfers werden als Income (2) oder Expense (3) importiert, nicht als Transfer (4)
+        trans_type = TransactionType.INCOME if tx.is_income else TransactionType.EXPENSE
         trans_type_name = "Einnahme" if tx.is_income else "Ausgabe"
 
         # Verwende externe Transfer-Kategorie
@@ -309,6 +319,8 @@ class TransactionImportService:
                 b4_id=tx.id,
             )
 
+            logger.debug(f"       Payload: acc_id={acc_id}, ext_cat_id={ext_cat_id}, type={trans_type.value}")
+
             resp = self.api.create_transaction(payload)
 
             if resp.get("success"):
@@ -319,7 +331,13 @@ class TransactionImportService:
             return False
 
         except APIError as e:
+            # Zeige API-Response für bessere Diagnose
             logger.error(f"    ❌ Import fehlgeschlagen: {e}")
+            logger.debug(f"       APIError attributes: status_code={e.status_code}, response={repr(e.response)}")
+            if e.response:
+                logger.error(f"       API Response: {e.response}")
+            else:
+                logger.error(f"       Keine Response-Details verfügbar")
             self.stats.increment_errors()
             return False
 

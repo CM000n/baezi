@@ -75,6 +75,7 @@ class EzbookkeepingClient:
             APIError: Bei API-Fehlern (wenn raise_on_error=True)
         """
         url = f"{self.base_url}/{endpoint}"
+        response = None
 
         try:
             response = self.session.request(method, url, **kwargs)
@@ -87,8 +88,13 @@ class EzbookkeepingClient:
         except requests.exceptions.HTTPError as e:
             error_msg = f"HTTP-Fehler bei {method} {endpoint}"
             logger.error(f"{error_msg}: {e}")
+            response_text = None
+            if response is not None:
+                if response.text:
+                    response_text = response.text[:500]
+                    logger.error(f"API Response: {response_text}")
             raise APIError(
-                response.status_code, error_msg, response.text[:200] if response else None
+                response.status_code if response is not None else 0, error_msg, response_text
             ) from e
 
         except requests.exceptions.RequestException as e:
